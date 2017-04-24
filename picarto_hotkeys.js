@@ -1,7 +1,7 @@
 /*
 	@Author  Vlle
-	@Date	 2017-03-08
-	@Version 0.1.5.1
+	@Date	 2017-04-24
+	@Version 0.1.5.2
 	
 	@ToDo:
 		- Loosing focus and other Bugs when clicking on the big Play-Button.
@@ -12,10 +12,10 @@
 		How to inject this Code:
 			
 			Browser Add-Ons:
-				Firefox: "JS Injector"       - https://chrome.google.com/webstore/detail/resource-override/pkoacgokdfckfpndoffpifphamojphii
+				Firefox: "JS Injector"	     - https://chrome.google.com/webstore/detail/resource-override/pkoacgokdfckfpndoffpifphamojphii
 				Chrome:  "Recource Override" - https://addons.mozilla.org/de/firefox/addon/js-injector/?src=api
 			
-			URL-Filter: picarto.tv/*
+			URL-Filter: https://picarto.tv/*
 */
 
 
@@ -24,15 +24,15 @@
 // ===================< picarto_hotkeys >===================================================
 
 function PICARTO_HOTKEYS() {
-	var self = this; // for use in callbacks, where this is something else
+	var self = this; // for use in callbacks, where variable "this" is something else
 	
-	this.version = '0.1.5.1';
-	this.tested_in_picarto_version = '1.70';
+	this.version = '0.1.5.2';
+	this.tested_in_picarto_version = '2.01';
 	this.debug = false;
 	
 	this.is_popout = (window.opener && window.opener !== window)
 	this.volume_step = 0.05;
-	this.active_player = 1; // 0 = none, >0 = preselect
+	this.active_playerID = 1; // 0 = none, >0 = preselect
 	
 	this.infobox_selector = '.streamer_infos > div > div:visible'; // null or '.streamer_infos > div > div:visible'
 	
@@ -45,7 +45,7 @@ function PICARTO_HOTKEYS() {
 	// change active player on focus
 	
 	if ($('.video-js').length == 1) { // event is unnecessary when only 1 player
-		this.active_player = 1;
+		this.active_playerID = 1;
 		
 	} else {
 		
@@ -53,7 +53,7 @@ function PICARTO_HOTKEYS() {
 		var selector = '.video-js';
 		$(selector).attr('tabindex', 0); // enable events (make elements focusable)
 		$(document).on('focus', selector, function(event) {
-			self.set_active_player( $(this).attr('data-playerid') );
+			self.set_active_playerID( $(this).attr('data-playerid') );
 		});
 		
 		// infobox
@@ -61,7 +61,7 @@ function PICARTO_HOTKEYS() {
 			$(this.infobox_selector).each(function(i, el) {
 				//$(el).attr('tabindex', 0); // <-- will be done when creating hotkey events
 				$(el).on('focus', null, {'id':i+1}, function(event) {
-					self.set_active_player( event.data.id );
+					self.set_active_playerID( event.data.id );
 				});
 			});
 		}
@@ -91,9 +91,9 @@ PICARTO_HOTKEYS.prototype._debug = function(msg) {
 
 // ==================
 
-PICARTO_HOTKEYS.prototype.set_active_player = function(player_id) {
+PICARTO_HOTKEYS.prototype.set_active_playerID = function(player_id) {
 	
-	this.active_player = parseInt(player_id);
+	this.active_playerID = parseInt(player_id);
 	this._debug('changed player focus to: ' + player_id);
 }
 
@@ -101,10 +101,10 @@ PICARTO_HOTKEYS.prototype.set_active_player = function(player_id) {
 
 PICARTO_HOTKEYS.prototype.keydown_event = function(event) {
 	
-	if (this.active_player == 0)
+	if (this.active_playerID == 0)
 		return;
 	
-	var playerID = this.active_player;
+	var playerID = this.active_playerID;
 	var player = videojs.getPlayers()['playerHolder' + playerID];
 	var playerContainer = $('#playerHolder' + playerID);
 	
@@ -234,14 +234,22 @@ PICARTO_HOTKEYS.prototype._ms_shrink = function(buttonContainer) { // anonymous 
 
 var picarto_hotkeys = null; // define globally
 
-$(document).ready(function () {
-	
-	if ($('.video-js').length == 0) { // Explore / Chat-Popout / anything without Player
-		console.debug('Picarto-Hotkeys: No Player found, won\'t initialize.');
-		return;
+(function picarto_hotkeys_defer() { // wait for jQuery to load - http://stackoverflow.com/questions/7486309/how-to-make-script-execution-wait-until-jquery-is-loaded/17914854#17914854
+	if (!window.jQuery) {
+		setTimeout(picarto_hotkeys_defer, 50);
+	} else {
+		
+		
+		$(document).ready(function () {
+			
+			if ($('.video-js').length == 0) { // Explore / Chat-Popout / anything without Player
+				console.debug('Picarto-Hotkeys: No Player found, won\'t initialize.');
+				return;
+			}
+			
+			picarto_hotkeys = new PICARTO_HOTKEYS();
+			
+			console.info('Picarto-Hotkeys v' + picarto_hotkeys.version + ' (tested in Picarto v' + picarto_hotkeys.tested_in_picarto_version + ')');
+		});
 	}
-	
-	picarto_hotkeys = new PICARTO_HOTKEYS();
-	
-	console.info('Picarto-Hotkeys v' + picarto_hotkeys.version + ' (for Picarto v' + picarto_hotkeys.tested_in_picarto_version + ')');
-});
+})();
