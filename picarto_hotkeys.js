@@ -1,24 +1,5 @@
-/*
-	@Author  Vlle
-	@Date	 2017-04-24
-	@Version 0.1.5.2
-	
-	@ToDo:
-		- Loosing focus and other Bugs when clicking on the big Play-Button.
-	
-	@Description:
-		Add Hotkeys to the Videoplayer of picarto.tv
-		
-		How to inject this Code:
-			
-			Browser Add-Ons:
-				Firefox: "JS Injector"	     - https://chrome.google.com/webstore/detail/resource-override/pkoacgokdfckfpndoffpifphamojphii
-				Chrome:  "Recource Override" - https://addons.mozilla.org/de/firefox/addon/js-injector/?src=api
-			
-			URL-Filter: https://picarto.tv/*
-*/
-
-
+// @Author  vlle
+// @Web     https://github.com/vlle/Picarto-Hotkeys
 
 // =======================< picarto_hotkeys >===================================================
 // ===================< picarto_hotkeys >===================================================
@@ -30,9 +11,9 @@ function PICARTO_HOTKEYS() {
 	this.tested_in_picarto_version = '2.01';
 	this.debug = false;
 	
-	this.is_popout = (window.opener && window.opener !== window)
+	this.is_popout = (window.opener && window.opener !== window);
 	this.volume_step = 0.05;
-	this.active_playerID = 1; // 0 = none, >0 = preselect
+	this.active_playerID = 1; // >0 = preselect
 	
 	this.infobox_selector = '.streamer_infos > div > div:visible'; // null or '.streamer_infos > div > div:visible'
 	
@@ -40,7 +21,6 @@ function PICARTO_HOTKEYS() {
 	// add css to remove outline on focused elements (they have to be focusable for events to work)
 	
 	$(document.head).append('<style> div[tabindex="0"] { outline: none; } </style>');
-	
 	
 	// change active player on focus
 	
@@ -67,7 +47,6 @@ function PICARTO_HOTKEYS() {
 		}
 	}
 	
-	
 	// hotkey event
 	
 	var event_elements_selector = (this.is_popout ? 'body' : 
@@ -87,7 +66,7 @@ function PICARTO_HOTKEYS() {
 PICARTO_HOTKEYS.prototype._debug = function(msg) {
 	if (this.debug)
 		console.debug('Picarto-Hotkeys:', msg);
-}
+};
 
 // ==================
 
@@ -95,13 +74,13 @@ PICARTO_HOTKEYS.prototype.set_active_playerID = function(player_id) {
 	
 	this.active_playerID = parseInt(player_id);
 	this._debug('changed player focus to: ' + player_id);
-}
+};
 
 // ==================
 
 PICARTO_HOTKEYS.prototype.keydown_event = function(event) {
 	
-	if (this.active_playerID == 0)
+	if (!this.active_playerID)
 		return;
 	
 	var playerID = this.active_playerID;
@@ -168,7 +147,7 @@ PICARTO_HOTKEYS.prototype.keydown_event = function(event) {
 		case 38: // Up
 			if (!playerContainer.is(':visible')) break; // ignore if hidden
 			if (player.muted()) {
-				player.muted( false )
+				player.muted(false);
 				this._debug('unmuted');
 			}
 			player.volume( player.volume() + this.volume_step );
@@ -188,7 +167,7 @@ PICARTO_HOTKEYS.prototype.keydown_event = function(event) {
 	
 	event.target.focus(); // focus lost sometimes, when DOM is changed
 	event.preventDefault();
-}
+};
 
 // ==================
 
@@ -196,21 +175,21 @@ PICARTO_HOTKEYS.prototype._ms_enlarge = function(buttonContainer) { // anonymous
 	//var buttonContainer = $(this);
 	var streamCount = $('.ms_enlarge').length;
 	var playerID = buttonContainer.attr('data-playerid');
-	var playerContainer = $('#playerHolder' + playerID); // ADDED
+	var playerContainer = $('#playerHolder' + playerID);
 	for (var i = 1; i <= streamCount; i++) {
 		if (i != playerID) {
-			videojs.getPlayers()['playerHolder' + i].pause(); // changed videojs(...) -> videojs.getPlayers()[...]
+			videojs.getPlayers()['playerHolder' + i].pause();
 			$('#playerHolder' + i).parent().parent().css('width', '0px').css('height', '0px')
-				.removeClass('flexPlayerInnerFull'); // ADDED
+				.removeClass('flexPlayerInnerFull'); 
 		}
 	}
-	if (!playerContainer.is(':visible')) // play if another player was enlarged // ADDED
-		videojs.getPlayers()['playerHolder' + playerID].play(); // ADDED
-	playerContainer.parent().parent().addClass('flexPlayerInnerFull') // changed $('#playerHolder' + playerID) --> playerContainer
-		.css('width', '').css('height', ''); // ADDED
+	if (!playerContainer.is(':visible')) // play if another player was enlarged
+		videojs.getPlayers()['playerHolder' + playerID].play();
+	playerContainer.parent().parent().addClass('flexPlayerInnerFull')
+		.css('width', '').css('height', '');
 	$('.ms_enlarge').hide();
-	$('.ms_shrink').show()
-}
+	$('.ms_shrink').show();
+};
 
 PICARTO_HOTKEYS.prototype._ms_shrink = function(buttonContainer) { // anonymous function from player.min.js
 	//var buttonContainer = $(this);
@@ -218,16 +197,14 @@ PICARTO_HOTKEYS.prototype._ms_shrink = function(buttonContainer) { // anonymous 
 	var playerID = buttonContainer.attr('data-playerid');
 	for (var i = 1; i <= streamCount; i++) {
 		if (i != playerID) {
-			videojs.getPlayers()['playerHolder' + i].play(); // changed videojs(...) -> videojs.getPlayers()[...]
+			videojs.getPlayers()['playerHolder' + i].play();
 			$('#playerHolder' + i).parent().parent().css('width', '').css('height', '')
 		}
 	}
 	$('#playerHolder' + playerID).parent().parent().removeClass('flexPlayerInnerFull');
 	$('.ms_enlarge').show();
 	$('.ms_shrink').hide()
-}
-
-
+};
 
 // =======================< Initialize >===================================================
 // ===================< Initialize >===================================================
@@ -238,7 +215,6 @@ var picarto_hotkeys = null; // define globally
 	if (!window.jQuery) {
 		setTimeout(picarto_hotkeys_defer, 50);
 	} else {
-		
 		
 		$(document).ready(function () {
 			
