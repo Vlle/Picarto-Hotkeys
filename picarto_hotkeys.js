@@ -76,6 +76,15 @@ PICARTO_HOTKEYS.prototype.set_active_playerID = function(player_id) {
 	this._debug('changed player focus to: ' + player_id);
 };
 
+PICARTO_HOTKEYS.prototype.focus = function(player_id) {
+    if (player_id > 0)
+	    this.set_active_playerID(player_id);
+	player = videojs.getPlayers()['playerHolder' + this.active_playerID];
+	el = player.el_;
+	el.setAttribute('tabindex', 0); // make focusable
+	el.focus();
+};
+
 // ==================
 
 PICARTO_HOTKEYS.prototype.keydown_event = function(event) {
@@ -224,6 +233,7 @@ var picarto_hotkeys = null; // define globally
 			}
 			
 			picarto_hotkeys = new PICARTO_HOTKEYS();
+			picarto_hotkeys.focus();
 			
 			console.info('Picarto-Hotkeys v' + picarto_hotkeys.version + ' (tested in Picarto v' + picarto_hotkeys.tested_in_picarto_version + ')');
 		});
