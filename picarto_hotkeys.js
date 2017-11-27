@@ -7,8 +7,8 @@
 function PICARTO_HOTKEYS() {
 	var self = this; // for use in callbacks, where variable "this" is something else
 	
-	this.version = '0.1.5.2';
-	this.tested_in_picarto_version = '2.01';
+	this.version = '0.1.5.3';
+	this.tested_in_picarto_version = '3.63';
 	this.debug = false;
 	
 	this.is_popout = (window.opener && window.opener !== window);
@@ -79,8 +79,8 @@ PICARTO_HOTKEYS.prototype.set_active_playerID = function(player_id) {
 PICARTO_HOTKEYS.prototype.focus = function(player_id) {
     if (player_id > 0)
 	    this.set_active_playerID(player_id);
-	player = videojs.getPlayers()['playerHolder' + this.active_playerID];
-	el = player.el_;
+	var player = videojs.getPlayers()['playerHolder' + this.active_playerID];
+	var el = player.el_;
 	el.setAttribute('tabindex', 0); // make focusable
 	el.focus();
 };
@@ -233,7 +233,14 @@ var picarto_hotkeys = null; // define globally
 			}
 			
 			picarto_hotkeys = new PICARTO_HOTKEYS();
-			picarto_hotkeys.focus();
+			
+			(function defer() { // try to set focus till it works
+			    try {
+			        picarto_hotkeys.focus();
+			    } catch(exc) {
+			        setTimeout(defer, 100);
+			    }
+			})();
 			
 			console.info('Picarto-Hotkeys v' + picarto_hotkeys.version + ' (tested in Picarto v' + picarto_hotkeys.tested_in_picarto_version + ')');
 		});
