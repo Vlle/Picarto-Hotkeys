@@ -1,3 +1,5 @@
+__BROKEN. This script doesn't work anymore and i won't repair it in the foreseeable future.__
+
 Add Hotkeys to the Videoplayer of picarto.tv
 
 How to inject this Code:
